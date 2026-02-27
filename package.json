@@ -3,9 +3,6 @@
   "description": "向crom查询并返回文本的插件，自用",
   "version": "2.2.1",
   "main": "lib/index.js",
-  "scripts": {
-    "dev": "koishi start",
-    "build": "tsc"
   "typings": "lib/index.d.ts",
   "files": [
     "lib",
