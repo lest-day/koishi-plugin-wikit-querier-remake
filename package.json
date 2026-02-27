@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-wikit-querier-remodified",
   "description": "Wikit，修改版，自用",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -9,10 +9,10 @@
     "dist"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/Laimuslime/koishi-plugin-crom-querier-modified",
+  "homepage": "https://github.com/lest-day/koishi-plugin-wikit-querier-remodified.git",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Laimuslime/koishi-plugin-crom-querier-modified.git"
+    "url": "git+https://github.com/lest-day/koishi-plugin-wikit-querier-remodified.git"
   },
   "keywords": [
     "chatbot",
