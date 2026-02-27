@@ -1,5 +1,5 @@
 {
-  "name": "koishi-plugin-wikit-querier-remake",
+  "name": "koishi-plugin-wikit-querier-remodified",
   "description": "Wikit，修改版，自用",
   "version": "0.0.2",
   "main": "lib/index.js",
