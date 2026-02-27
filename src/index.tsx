@@ -1,7 +1,7 @@
 import { Context, Schema } from "koishi";
-import {} from "koishi-plugin-adapter-onebot";
+import { } from "koishi-plugin-adapter-onebot";
 import { queries } from "./graphql";
-import { branchInfo, wikitApiRequest } from "./lib";
+import { wikiInfo, wikitApiRequest } from "./lib";
 
 import type { Event } from "@satorijs/protocol";
 import type { Argv, h, Session } from "koishi";
@@ -17,7 +17,7 @@ interface WikitQuerierTable {
   id?: number;
   platform: string;
   channelId: string;
-  defaultBranch: string;
+  defaultwiki: string;
 }
 
 export const name: string = "wikit-querier";
@@ -41,7 +41,7 @@ export function apply(ctx: Context, config: Config): void {
     id: "unsigned",
     platform: "string(64)",
     channelId: "string(64)",
-    defaultBranch: "string(64)",
+    defaultwiki: "string(64)",
   });
 
   const normalizeUrl = (url: string): string =>
@@ -49,8 +49,8 @@ export function apply(ctx: Context, config: Config): void {
       .replace(/^https?:\/\/backrooms-wiki-cn.wikidot.com/, "https://brcn.backroomswiki.cn")
       .replace(/^https?:\/\/scp-wiki-cn.wikidot.com/, "https://scpcn.backroomswiki.cn")
       .replace(/^https?:\/\/([a-z]+-wiki-cn|nationarea)/, "https://$1");
-  
-  const getDefaultBranch = async (session: Session): Promise<string | undefined> => {
+
+  const getDefaultwiki = async (session: Session): Promise<string | undefined> => {
     const platform = session.event.platform;
     const channelId = session.event.channel.id;
 
@@ -60,75 +60,94 @@ export function apply(ctx: Context, config: Config): void {
     });
 
     if (data.length > 0) {
-      return data[0].defaultBranch;
+      return data[0].defaultwiki;
     }
 
     return undefined;
   };
-  // const getBranchUrl = async (
-  //   branch: string | undefined,
+  // const getwikiUrl = async (
+  //   wiki: string | undefined,
   //   lastStr: string | undefined,
   //   { platform, channel: { id: channelId } }: Event,
   // ): Promise<string> => {
-  //   const branchUrls: CromQuerierTable[] = await ctx.database.get("cromQuerier", { platform, channelId });
-  //   if (Object.keys(branchInfo).includes(lastStr)) {
-  //     return branchInfo[lastStr].url;
-  //   } else if (branch && Object.keys(branchInfo).includes(branch)) {
-  //     return branchInfo[branch].url;
-  //   } else if (branchUrls.length > 0) {
-  //     return branchInfo[branchUrls[0].defaultBranch].url;
+  //   const wikiUrls: CromQuerierTable[] = await ctx.database.get("cromQuerier", { platform, channelId });
+  //   if (Object.keys(wikiInfo).includes(lastStr)) {
+  //     return wikiInfo[lastStr].url;
+  //   } else if (wiki && Object.keys(wikiInfo).includes(wiki)) {
+  //     return wikiInfo[wiki].url;
+  //   } else if (wikiUrls.length > 0) {
+  //     return wikiInfo[wikiUrls[0].defaultwiki].url;
   //   } else {
-  //     return branchInfo.cn.url;
+  //     return wikiInfo.cn.url;
   //   }
   // };
-  let cmd = ctx.command('wikit')
-  cmd
-  .subcommand("wikit-list", "列出所有支持的网站及对应的地址。")
-  .action(async (argv: Argv): Promise<string> => {
-    const entries = Object.entries(branchInfo);
-    if (entries.length === 0) return "当前没有配置任何维基信息。";
 
-    const lines = entries.map(([key, value]) => `${key} → https://${value.wiki}.wikidot.com/`);
-    return `支持的维基列表：\n${lines.join("\n")}`;
-  });
+  let cmd = ctx
+  cmd
+    .command("wikitre", "（重制版）作者及页面信息查询")
 
   cmd
-    .subcommand("wikit-default-branch <维基名称:string>", "设置默认维基。")
-    .alias("wikit-db")
-    .action(async (argv: Argv, branch: string): Promise<string> => {
-      const platform: string = argv.session.event.platform;
-      const channelId: string = argv.session.event.channel.id;
-      if (!branch || !Object.keys(branchInfo).includes(branch) || branch === "all") {
-        return "维基名称不正确。";
-      }
-      ctx.database.upsert("wikitQuerier", [{ channelId, platform, defaultBranch: branch }], ["platform", "channelId"]);
-      return `已将本群默认查询维基设置为: ${branch}`;
+    .command("wikitre.about", "此插件的相关信息。")
+    .action(async (argv: Argv): Promise<string> => {
+      return (
+        <template>
+          <quote id={argv.session.event.message.id} />
+          此组件由 lestday233 基于 Wikit API 编写
+          <br />
+          修改自 https://github.com/Laimuslime/koishi-plugin-crom-querier-modified
+        </template>
+      );
     });
 
-cmd
-    .subcommand("wikit-author <作者:string> [维基名称:string]", "查询作者信息。\n默认搜索所有支持的网站。")
-    .alias("wikit-au")
-    .action(async (argv: Argv, author: string, branch: string | undefined): Promise<h> => {
+  cmd
+    .command("wikitre.suppost-list", "列出所有支持的网站及对应的地址。")
+    .alias("wikitre-list")
+    .alias("wikitre.list")
+    .action(async (argv: Argv): Promise<string> => {
+      const entries = Object.entries(wikiInfo);
+      if (entries.length === 0) return "当前没有配置任何维基信息。";
+
+      const lines = entries.map(([key, value]) => `${key} → https://${value.wiki}.wikidot.com/`);
+      return `支持的维基列表：\n${lines.join("\n")}`;
+    });
+
+  cmd
+    .command("wikitre.default-wiki <维基名称:string>", "设置默认维基。")
+    .alias("wikitre-db")
+    .action(async (argv: Argv, wiki: string): Promise<string> => {
+      const platform: string = argv.session.event.platform;
+      const channelId: string = argv.session.event.channel.id;
+      if (!wiki || !Object.keys(wikiInfo).includes(wiki) || wiki === "all") {
+        return "维基名称不正确。";
+      }
+      ctx.database.upsert("wikitQuerier", [{ channelId, platform, defaultwiki: wiki }], ["platform", "channelId"]);
+      return `已将本群默认查询维基设置为: ${wiki}`;
+    });
+
+  cmd
+    .command("wikitre.author <作者:string> [维基名称:string]", "查询作者信息。默认搜索所有支持的维基。")
+    .alias("wikitre-au")
+    .action(async (argv: Argv, author: string, wiki: string | undefined): Promise<h> => {
 
       const isRankQuery: boolean = /^#[0-9]{1,15}$/.test(author);
       const rankNumber: number | null = isRankQuery ? Number(author.slice(1)) : null;
       let queryString: string = isRankQuery ? queries.userRankQuery : queries.userQuery;
 
       // 1. 识别全站查询参数 all
-      const validBranches = ["all", ...Object.keys(branchInfo)];
+      const validwikies = ["all", ...Object.keys(wikiInfo)];
       const authorName: string =
-        (branch && !validBranches.includes(branch)) || !author ?
-          validBranches.includes(argv.args.at(-1)) ?
+        (wiki && !validwikies.includes(wiki)) || !author ?
+          validwikies.includes(argv.args.at(-1)) ?
             argv.args.slice(0, -1).join(" ")
-          : argv.args.join(" ")
-        : author;
+            : argv.args.join(" ")
+          : author;
 
       // 2. User 渲染组件（这里的 object 是参数，绝不能丢）
       const User = ({ object }: { object: UserQueryResponse & UserRankQueryResponse }): h => {
         const dataArray: AuthorRank[] = object.authorRanking ?
           object.authorRanking
-        : object.authorGlobalRank ? [object.authorGlobalRank] 
-        : object.authorWikiRank ? [object.authorWikiRank] : [];
+          : object.authorGlobalRank ? [object.authorGlobalRank]
+            : object.authorWikiRank ? [object.authorWikiRank] : [];
 
         if (!dataArray || dataArray.length === 0) {
           return <template>未找到用户。</template>;
@@ -150,13 +169,13 @@ cmd
         if (!user) {
           return <template>未找到用户。</template>;
         }
-        
+
         // 算出页面数和平均分
-        const total = object.articles?.pageInfo?.total ?? "未知"; 
-        
+        const total = object.articles?.pageInfo?.total ?? "未知";
+
         let average: string | number = "未知";
         if (typeof total === "number" && total > 0) {
-          average = (user.value / total).toFixed(2); 
+          average = (user.value / total).toFixed(2);
         } else if (total === 0) {
           average = 0;
         }
@@ -164,28 +183,28 @@ cmd
         return (
           <template>
             <quote id={argv.session.event.message.id} />
-            {user.name} (#{user.rank})
+            🙎‍♂️ {user.name} (#{user.rank})
             <br />
-            总分：{user.value} 页面数：{total} 平均分：{average}
+            ⭐ 总分：{user.value} | 📑 页面数：{total} | 📈 平均分：{average}
           </template>
         );
       };
 
       // 3. 发送请求与拦截处理
       try {
-        let finalBranch = branch;
-        if (!finalBranch) {
-          finalBranch = await getDefaultBranch(argv.session);
-        }
-        
-        // 切换到全站查询
-        if (!finalBranch || finalBranch === "all") {
-          // 👇 加了判断：如果是查排名，继续用排名的 Query 拿全站排行榜；如果是查名字，再切换
-          queryString = isRankQuery ? queries.userRankQuery : queries.userGlobalQuery;
-          finalBranch = "all"; 
+        let finalwiki = wiki;
+        if (!finalwiki) {
+          finalwiki = await getDefaultwiki(argv.session);
         }
 
-        let result = await wikitApiRequest(authorName, finalBranch, 0, queryString);
+        // 切换到全站查询
+        if (!finalwiki || finalwiki === "all") {
+          // 👇 加了判断：如果是查排名，继续用排名的 Query 拿全站排行榜；如果是查名字，再切换
+          queryString = isRankQuery ? queries.userRankQuery : queries.userGlobalQuery;
+          finalwiki = "all";
+        }
+
+        let result = await wikitApiRequest(authorName, finalwiki, 0, queryString);
 
         // 如果是查排名，偷偷发二次请求把页面数补齐
         if (isRankQuery && (result as UserRankQueryResponse).authorRanking) {
@@ -195,8 +214,8 @@ cmd
           );
           if (matchedUser) {
             // 查排名时，根据是否是全站自动切换查询语法
-            let secondQuery = (!finalBranch || finalBranch === "all") ? queries.userGlobalQuery : queries.userQuery;
-            result = await wikitApiRequest(matchedUser.name, finalBranch, 0, secondQuery);
+            let secondQuery = (!finalwiki || finalwiki === "all") ? queries.userGlobalQuery : queries.userQuery;
+            result = await wikitApiRequest(matchedUser.name, finalwiki, 0, secondQuery);
           }
         }
 
@@ -212,19 +231,19 @@ cmd
     });
 
   cmd
-    .subcommand("wikit-search <标题:string> [维基名称:string]", "查询文章信息。\n默认搜索所有支持的网站。")
-    .alias("wikit-sr")
-    .action(async (argv: Argv, title: string, branch: string | undefined): Promise<h> => {
-      // const branchUrl = await getBranchUrl(branch, argv.args.at(-1), argv.session.event);
+    .command("wikitre.search <标题:string> [维基名称:string]", "查询文章信息。默认搜索所有支持的维基。")
+    .alias("wikitre-sr")
+    .action(async (argv: Argv, title: string, wiki: string | undefined): Promise<h> => {
+      // const wikiUrl = await getwikiUrl(wiki, argv.args.at(-1), argv.session.event);
       const titleName: string =
-        (branch && !Object.keys(branchInfo).includes(branch)) || !title ?
-          Object.keys(branchInfo).includes(argv.args.at(-1)) ?
+        (wiki && !Object.keys(wikiInfo).includes(wiki)) || !title ?
+          Object.keys(wikiInfo).includes(argv.args.at(-1)) ?
             argv.args.slice(0, -1).join(" ")
-          : argv.args.join(" ")
-        : title;
+            : argv.args.join(" ")
+          : title;
 
       const Author = ({ authorName }: { authorName: string }): h => {
-        return <template>作者：{authorName || "已注销用户"}</template>;
+        return <template>🙎‍♂️作者：{authorName || "已注销用户"}</template>;
       };
 
       const TitleProceed = ({ titleData }: { titleData: TitleQueryResponse }): h => {
@@ -248,23 +267,23 @@ cmd
         return (
           <template>
             <quote id={argv.session.event.message.id} />
-            {article.title}
+            📝页面：{article.title}
             <br />
-            评分：{article.rating}
+            ⭐评分：{article.rating}
             <br />
             <Author authorName={article.author} />
             <br />
-            {normalizeUrl(article.url)}
+            🔗{normalizeUrl(article.url)}
           </template>
         );
       };
 
       try {
-        let finalBranch = branch;
-        if (!finalBranch) {
-           finalBranch = await getDefaultBranch(argv.session);
+        let finalwiki = wiki;
+        if (!finalwiki) {
+          finalwiki = await getDefaultwiki(argv.session);
         }
-        const result = await wikitApiRequest(titleName, finalBranch, 0, queries.titleQuery);
+        const result = await wikitApiRequest(titleName, wiki, 0, queries.titleQuery);
         const response: h = <TitleProceed titleData={result as TitleQueryResponse} />;
 
         const sentMessages = await argv.session.send(response);

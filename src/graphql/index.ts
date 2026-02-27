@@ -41,6 +41,24 @@ export const queries = {
     }
   }
   `,
+  userGlobalQuery: gql`
+    query userGlobalQuery($query: String!) {
+      authorGlobalRank(
+        name: $query
+        by: RATING
+      ) {
+        rank
+        name
+        value
+      }
+      
+      articles(author: $query) {
+        pageInfo {
+          total
+        }
+      }
+    }
+  `,
   userRankQuery: gql`
     query userRankQuery($baseUrl: String) {
       authorRanking(wiki: $baseUrl, by: RATING) {
@@ -51,4 +69,3 @@ export const queries = {
     }
   `,
 };
-
