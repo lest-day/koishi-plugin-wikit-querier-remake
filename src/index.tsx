@@ -84,17 +84,16 @@ export function apply(ctx: Context, config: Config): void {
 
   let cmd = ctx
   cmd
-    .command("wikitre", "（重制版）作者及页面信息查询")
+    .command("wikitre", "修改版作者及页面信息查询")
 
   cmd
     .command("wikitre.about", "此插件的相关信息。")
+    .alias("wikitre-about")
     .action(async (argv: Argv): Promise<string> => {
       return (
         <template>
           <quote id={argv.session.event.message.id} />
-          此组件由 lestday233 基于 Wikit API 编写
-          <br />
-          修改自 https://github.com/Laimuslime/koishi-plugin-crom-querier-modified
+          此组件由 lestday233 基于 Wikit API 编写，修改自 https://github.com/Laimuslime/koishi-plugin-crom-querier-modified
         </template>
       );
     });
@@ -183,7 +182,7 @@ export function apply(ctx: Context, config: Config): void {
         return (
           <template>
             <quote id={argv.session.event.message.id} />
-            🙎‍♂️ {user.name} (#{user.rank})
+            🔍 {user.name} (#{user.rank})
             <br />
             ⭐ 总分：{user.value} | 📑 页面数：{total} | 📈 平均分：{average}
           </template>
