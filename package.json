@@ -1,13 +1,17 @@
 {
   "name": "koishi-plugin-wikit-querier-remodified",
   "description": "Wikit，修改版，自用",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
     "lib",
     "dist"
   ],
+  "scripts": {
+    "build": "build.cmd",
+    "publish": "npm publish --registry=https://registry.npmjs.org --workspaces=false"
+  },
   "license": "MIT",
   "homepage": "https://github.com/lest-day/koishi-plugin-wikit-querier-remodified.git",
   "repository": {

@@ -242,7 +242,7 @@ export function apply(ctx: Context, config: Config): void {
           : title;
 
       const Author = ({ authorName }: { authorName: string }): h => {
-        return <template>🙎‍♂️作者：{authorName || "已注销用户"}</template>;
+        return <template>🔍作者：{authorName || "已注销用户"}</template>;
       };
 
       const TitleProceed = ({ titleData }: { titleData: TitleQueryResponse }): h => {
