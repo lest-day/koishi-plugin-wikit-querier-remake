@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-wikit-querier-remodified",
   "description": "Wikit，修改版，自用",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
